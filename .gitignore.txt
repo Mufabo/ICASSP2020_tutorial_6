@@ -1,0 +1,3 @@
+/.spyproject
+/icassp20_T6.egg-info
+/tests
