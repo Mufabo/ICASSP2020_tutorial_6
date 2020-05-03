@@ -1,6 +1,0 @@
-numpy
-matplotlib
-pyclustering
-scipy
-setuptools
-statsmodels
