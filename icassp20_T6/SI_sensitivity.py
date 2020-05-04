@@ -150,19 +150,19 @@ p_over = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
 #%% Evaluation
 for ii_embic in range(embic_iter):
     for ii_eps in range(eps_iter):
-        for k in range(bic_final.shape[1]):
+        for k in range(bic_final.shape[0]):
             
-            BICmax = bic_final[:, k, ii_embic, :, ii_eps] == np.max(bic_final[:, k, ii_embic, :, ii_eps], axis=0)
+            BICmax = bic_final[k,:, ii_embic, :, ii_eps] == np.max(bic_final[k,:, ii_embic, :, ii_eps], axis=0)
             
             K_true_det = np.repeat(np.hstack([[K_true == s for s in range(1, K_true+1)], np.zeros(L_max - K_true)]), MC) == 1
 
-            K_true_det = np.reshape(K_true_det, [K_true + L_max - K_true, MC])
+            K_true_det = np.reshape(K_true_det, [L_max, MC])
 
             K_true_under = np.repeat(np.hstack([np.invert(\
                np.array([K_true == s for s in range(1, K_true)])),\
                np.zeros(L_max - (K_true-1))]) , MC) == 1
                 
-            K_true_under = np.reshape(K_true_under, [K_true + L_max - K_true, MC])
+            K_true_under = np.reshape(K_true_under, [L_max, MC])
             
             p_under[ii_embic, k, ii_eps] = np.sum(BICmax[K_true_under.T])/MC
             p_det[ii_embic, k, ii_eps] = np.sum(BICmax[K_true_det.T])/MC
