@@ -88,44 +88,8 @@ pen_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
 #%% Cluster Enumeration
 tic = time.time()
 pool = Pool()
-
-def fun(iMC):
-    bic = np.zeros([embic_iter, L_max, 3])
-    like = np.zeros([embic_iter, L_max, 3])
-    pen = np.zeros([embic_iter, L_max, 3])
-    for iEmBic in range(embic_iter):
-        for ll in range(L_max):
-            # EM
-            mu_est, S_est, t, R = t6.EM_RES(data[:,1:r+1,iEpsilon,iMC], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
-            mem = (R == R.max(axis=1)[:,None])
-            
-            bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data, S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
-            bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
-            bic[iEmBic, ll, 2], like[iEmBic, ll, 2], pen[iEmBic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
-            
-            for iEmBic in range(embic_iter):
-                for ll in range(L_max):
-                    # EM
-                    mu_est, S_est, t, R = t6.EM_RES(data[:,1:r+2, iEpsilon, iMC], ll+1, g[em_bic[iEmBic,0]], psi[em_bic[iEmBic,0]])
-                    mem = (R == R.max(axis=1)[:,None])
-                    
-                    # BIC
-                    bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data[iMC, iEpsilon, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
-            
-                    bic[iEmBic, ll, 1], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
-            
-                    bic[iEmBic, ll, 2], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
-                    
-            bic_final[:,:,:, iMC, iEpsilon] = bic
-            like_final[:,:,:, iMC, iEpsilon] = like
-            pen_final[:,:,:, iMC, iEpsilon] = pen
-            print(epsilon[iEpsilon])
-            print(time.time() - tic)
-
-
-            
+           
 for iEpsilon in range(eps_iter):
-    #pool.imap(fun, [iMC for iMC in range(MC)])
     for iMC in range(MC):
         bic = np.zeros([embic_iter, L_max, 3])
         like = np.zeros([embic_iter, L_max, 3])
@@ -179,13 +143,15 @@ names = ["RES", "aRES", "Schwarz"]
 for iEmBic in range(embic_iter):
     plt.figure()
     plt.grid()
-    plt.plot(epsilon, p_det[iEmBic, :, :])
+    plt.plot(epsilon, p_det[iEmBic, :, :].T)
     plt.xlabel('% of Outliers')
     plt.ylabel("probability of detection")
     plt.ylim(0, 1)
-    plt.legend(names, loc='lower left')
+    plt.legend(names, loc='upper right')
     plt.title("Nk-" + str(N_k) + ", EM-" + g_names[em_bic[iEmBic, 0]-1] 
               + ", BIC-" + g_names[em_bic[iEmBic, 1]-1])
+    
+#%%
     
 names_all = ["EM-" + g_names[em_bic[iEmBic, 0]-1] 
               + ", BIC-" + g_names[em_bic[iEmBic, 1]-1] for iEmBic in range(embic_iter)]
@@ -197,20 +163,21 @@ plt.ylabel("Probability of detection")
 plt.ylim(0, 1)
 
 for iEmBic in range(embic_iter):
-    plt.plot(epsilon, p_det[iEmBic, :, :], marker=marker[iEmBic])
+    plt.plot(epsilon, p_det[iEmBic, :, :].T, marker=marker[iEmBic])
     
-plt.legend(names_all, loc="lower right")
+plt.legend(names_all, loc="upper right")
 plt.title("Nk-" + str(N_k))
 
-for ii_bic in range(bic_final.shape[1]):
+#%%
+for ii_bic in range(3):
     plt.figure()
     plt.grid()
-    plt.plot(epsilon, p_det[:, ii_bic, :], marker=marker[ii_bic])
+    plt.plot(epsilon, p_det[:, ii_bic, :].T, marker=marker[ii_bic])
     plt.xlabel("% of outliers")
     plt.ylabel("Probability of detection")
     plt.ylim(0, 1)
-    plt.legend(["EM: " + g_names[em_bic[iEmBic, 0]-1] + ", BIC" + g_names[em_bic[iEmBic, 1]-1]], loc="lower left")
-    plt.title("Nk-" + str(N_k) + "BIC-" + names[ii_bic])
+    plt.legend(["EM: " + g_names[em_bic[iEmBic, 0]-1] + ", BIC" + g_names[em_bic[iEmBic, 1]-1] for iEmBic in range(embic_iter)], loc="upper right")
+    plt.title("Nk-" + str(N_k) + " BIC-" + names[ii_bic])
     
     
             

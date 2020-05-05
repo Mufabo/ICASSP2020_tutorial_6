@@ -101,47 +101,31 @@ eta = [partial(t6.eta_gaus),
 tic = time.time()
 pool = Pool()
 
-breakpoint()
-bic_final = np.zeros([embic_iter, 3, L_max, MC, eps_iter])
-like_final = np.zeros([embic_iter, 3, L_max, MC, eps_iter])
-pen_final = np.zeros([embic_iter, 3, L_max, MC, eps_iter])
+bic_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
+like_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
+pen_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
 
-def fun(iMC):
-    bic = np.zeros([embic_iter, L_max, 3])
-    like = np.zeros([embic_iter, L_max, 3])
-    pen = np.zeros([embic_iter, L_max, 3])
-    for ii_embic in range(embic_iter):
-        for ll in range(L_max):
-            # EM
-            mu_est, S_est, t, R = t6.EM_RES(data[ii_eps], ll+1, g[em_bic[ii_embic, 0]-1], psi[em_bic[ii_embic,0]-1])
-            mem = (R == R.max(axis=1)[:,None])
-            
-            bic[ii_embic, ll, 0], like[ii_embic, ll, 0], pen[ii_embic, ll, 0] = t6.BIC_RES_2(data, S_est, mu_est, t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
-            bic[ii_embic, ll, 1], like[ii_embic, ll, 1], pen[ii_embic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
-            bic[ii_embic, ll, 2], like[ii_embic, ll, 2], pen[ii_embic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[ii_embic, 1]-1])
-            
-            for ii_embic in range(embic_iter):
+for ii_eps in range(eps_iter):
+    for iMC in range(MC):
+            bic = np.zeros([embic_iter, L_max, 3])
+            like = np.zeros([embic_iter, L_max, 3])
+            pen = np.zeros([embic_iter, L_max, 3])
+            for iEmBic in range(embic_iter):
                 for ll in range(L_max):
                     # EM
-                    mu_est, S_est, t, R = t6.EM_RES(data[ii_mc, ii_eps, :, 1:r+1], ll+1, g[em_bic[ii_embic,0]], psi[em_bic[ii_embic,0]])
+                    mu_est, S_est, t, R = t6.EM_RES(data[iMC, ii_eps,  :, 1:r+1], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
                     mem = (R == R.max(axis=1)[:,None])
                     
-                    # BIC
-                    bic[ii_embic, ll, 0], like[ii_embic, ll, 0], pen[ii_embic, ll, 0] = t6.BIC_RES_2(data[iMC, ii_eps, :, :], S_est, mu_est, t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
-            
-                    bic[ii_embic, ll, 1], like[ii_embic, ll, 0], pen[ii_embic, ll, 0] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
-            
-                    bic[ii_embic, ll, 2], like[ii_embic, ll, 0], pen[ii_embic, ll, 0] = t6.BIC_S(S_est, t, mem, rho[em_bic[ii_embic, 1]-1])
-                    
+                    bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data[iMC, ii_eps, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
+                    bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
+                    bic[iEmBic, ll, 2], like[iEmBic, ll, 2], pen[iEmBic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
+                       
             bic_final[:,:,:, iMC, ii_eps] = bic
             like_final[:,:,:, iMC, ii_eps] = like
             pen_final[:,:,:, iMC, ii_eps] = pen
-            print(str(ii_eps))
+            print(str(ii_eps)+ "/" + str(eps_iter))
             print(time.time() - tic)
             
-for ii_eps in range(eps_iter):
-    pool.map(fun, [iMC for iMC in range(MC)])
-
 
 p_under = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
 p_det = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
@@ -150,9 +134,9 @@ p_over = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
 #%% Evaluation
 for ii_embic in range(embic_iter):
     for ii_eps in range(eps_iter):
-        for k in range(bic_final.shape[0]):
+        for k in range(3):
             
-            BICmax = bic_final[k,:, ii_embic, :, ii_eps] == np.max(bic_final[k,:, ii_embic, :, ii_eps], axis=0)
+            BICmax = bic_final[ii_embic,:, k, :, ii_eps] == np.max(bic_final[ii_embic,:, k, :, ii_eps], axis=0)
             
             K_true_det = np.repeat(np.hstack([[K_true == s for s in range(1, K_true+1)], np.zeros(L_max - K_true)]), MC) == 1
 
@@ -164,8 +148,8 @@ for ii_embic in range(embic_iter):
                 
             K_true_under = np.reshape(K_true_under, [L_max, MC])
             
-            p_under[ii_embic, k, ii_eps] = np.sum(BICmax[K_true_under.T])/MC
-            p_det[ii_embic, k, ii_eps] = np.sum(BICmax[K_true_det.T])/MC
+            p_under[ii_embic, k, ii_eps] = np.sum(BICmax[K_true_under])/MC
+            p_det[ii_embic, k, ii_eps] = np.sum(BICmax[K_true_det])/MC
             p_over[ii_embic, k, ii_eps] = 1 - p_det[ii_embic, k, ii_eps] - p_under[ii_embic, k, ii_eps]
             
 
@@ -176,10 +160,10 @@ p_det_2 = np.transpose(p_det, [0, 2, 1])
 data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
 
 for ii_embic in range(embic_iter):
-    for k_bic in range(bic_final.shape[1]):
+    for k_bic in range(3):
         Z = np.reshape(p_det_2[ii_embic, :, k_bic], X.shape)
         plt.figure()
-        M, c = plt.contour(X, Y, Z)
+        plt.contour(X, Y, Z)
         t6.plot_scatter(data, K_true, r)
         plt.title("EM-" + g_names[em_bic[ii_embic, 0]-1] + ", BIC-" + g_names[em_bic[ii_embic, 1]-1] + "-"+names[k_bic])
         
