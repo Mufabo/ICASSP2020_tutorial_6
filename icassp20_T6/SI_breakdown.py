@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 from functools import partial
 import icassp20_T6 as t6
 import time
-from multiprocessing import Pool
+from numba import jit, prange
+import warnings
+
+warnings.filterwarnings('ignore')
 
 #%% User input
 
@@ -87,10 +90,11 @@ pen_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
 
 #%% Cluster Enumeration
 tic = time.time()
-pool = Pool()
+
            
-for iEpsilon in range(eps_iter):
-    for iMC in range(MC):
+@jit()
+def fun():
+    for iMC in prange(MC):
         bic = np.zeros([embic_iter, L_max, 3])
         like = np.zeros([embic_iter, L_max, 3])
         pen = np.zeros([embic_iter, L_max, 3])
@@ -107,9 +111,13 @@ for iEpsilon in range(eps_iter):
         bic_final[:,:,:, iMC, iEpsilon] = bic
         like_final[:,:,:, iMC, iEpsilon] = like
         pen_final[:,:,:, iMC, iEpsilon] = pen
-        print(epsilon[iEpsilon])
-        print(time.time() - tic)
 
+
+for iEpsilon in range(eps_iter):
+    fun()
+    print(epsilon[iEpsilon])
+    print(time.time() - tic)
+        
 p_under = np.zeros([embic_iter, L_max, eps_iter])
 p_det = np.zeros([embic_iter, L_max, eps_iter])
 p_over = np.zeros([embic_iter, L_max, eps_iter])

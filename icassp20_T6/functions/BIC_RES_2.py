@@ -14,7 +14,7 @@ def BIC_RES_2(data, S_est, mu_est, t, mem, rho, psi, eta):
         S_est : 3darray of shape (ll, r, r) Estimated scatter matrix of
             all clusters
             
-        mu_ests : 2darray of shape (r, ll). Estimated mean values of all
+        mu_ests : 2darray of shape (ll, r). Estimated mean values of all
             clusters
             
         t : 2darray of shape (N, ll). Squared Mahalanobis distances of data

@@ -1,6 +1,6 @@
 # T-6: Robust Data Science: Modern Tools for Detection, Clustering and Cluster Enumeration
 
-Python code for tutorial nr. & at ICASSP 2020.
+Python code for tutorial nr. 6 at ICASSP 2020.
 
 Link to the official conference page :
 

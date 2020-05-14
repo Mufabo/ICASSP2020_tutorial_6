@@ -29,7 +29,7 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
             the covariance matrix in the EM algorithm
         
     Returns:
-        mu_hat : 2darray of shape(r, ll). Final estimate of cluster
+        mu_hat : 2darray of shape(ll, r). Final estimate of cluster
             centroids.
             
         S_hat : 3darray of shape (ll, r, r). Final estimate of cluster
@@ -65,10 +65,11 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
                                  , metric = manhattan_metric)
         kmeans_instance.process()
         error = kmeans_instance.get_total_wce()
+
         if best is None or error < best:
             clu_memb_kmeans = kmeans_instance.get_clusters()
             mu_hat = np.array(kmeans_instance.get_centers())
-    
+            
 
     for m in range(ll):
         x_hat = data[clu_memb_kmeans[m]] - mu_hat[m]
@@ -102,7 +103,7 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
 
         # M-step
         for m in range(ll):
-            mu_hat[m] = np.sum(v_diff[:,m][:,None] * data, axis=0) / np.sum(v_diff[:,m], axis=0)
+            mu_hat[m] = np.sum(v_diff[:,m:m+1] * data, axis=0) / np.sum(v_diff[:,m], axis=0)
             S_hat[m,:,:] = 2 * (v_diff[:,m] * (data - mu_hat[m]).T @ (data - mu_hat[m])) / np.sum(v[:,m], axis=0) + reg_value * np.eye(r)
             tau[m] = np.sum(v[:,m], axis=0)/N
             t[:,m] = t6.mahalanobisDistance(data, mu_hat[m], S_hat[m,:,:])

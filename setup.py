@@ -27,8 +27,7 @@ setup(name='icassp20_T6',
             'pyclustering',
             'scipy',
             'setuptools',
-            'statsmodels',
-            'warnings'
+            'numba',
             ],
           zip_safe=False)
 
