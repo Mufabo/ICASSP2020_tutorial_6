@@ -55,13 +55,14 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
     """
     Kmeans clustering
     """
+    
     replicates = 5
     manhattan_metric = distance_metric(type_metric.MANHATTAN)
     best = None
     for i in range(replicates):
         # Initialization using K-means++
         initial_centers = kmeans_plusplus_initializer(data, ll).initialize()
-        kmeans_instance = kmeans(data, initial_centers, itermax = 10
+        kmeans_instance = kmeans(data, initial_centers, itermax = 1000
                                  , metric = manhattan_metric)
         kmeans_instance.process()
         error = kmeans_instance.get_total_wce()
@@ -72,25 +73,23 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
             
 
     for m in range(ll):
-        x_hat = data[clu_memb_kmeans[m]] - mu_hat[m]
+        x_hat = data[clu_memb_kmeans[m], 0] - mu_hat[m][:, None]
         N_m = len(clu_memb_kmeans[m])
         tau[m] = N_m / N
 
-        S_hat[m, :, :] = (x_hat.T @ x_hat) / N_m
+        S_hat[m, :, :] = (x_hat @ x_hat.T) / N_m
         
         # Check if the sample covariance matrix is positive definite
         spd = all(spl.eigvals(S_hat[m, :, :]) > 0)
         if spd or np.linalg.cond(S_hat[m, :, :]) > 30:
-
-            S_hat[m, :, :] = 1/(r*N_m)*np.sum(np.diag(x_hat.T @ x_hat)) * np.eye(r) 
+            S_hat[m, :, :] = 1/(r*N_m)*np.sum(np.diag(x_hat @ x_hat.T)) * np.eye(r) 
             if not all(spl.eigvals(S_hat[m, :, :]) > 0):
                 S_hat[m, :, :] = np.eye(r)
         t[:, m] = t6.mahalanobisDistance(data, mu_hat[m], S_hat[m, :, :])
-
+    
     """
     EM Algorithm
     """
-    
     for ii in range(em_max_iter):
         # E-step
         v_lower = np.zeros([N, ll])
@@ -106,6 +105,7 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
             mu_hat[m] = np.sum(v_diff[:,m:m+1] * data, axis=0) / np.sum(v_diff[:,m], axis=0)
             S_hat[m,:,:] = 2 * (v_diff[:,m] * (data - mu_hat[m]).T @ (data - mu_hat[m])) / np.sum(v[:,m], axis=0) + reg_value * np.eye(r)
             tau[m] = np.sum(v[:,m], axis=0)/N
+            
             t[:,m] = t6.mahalanobisDistance(data, mu_hat[m], S_hat[m,:,:])
 
             

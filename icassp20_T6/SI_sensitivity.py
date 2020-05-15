@@ -10,7 +10,7 @@ from scipy.stats.distributions import chi2
 from scipy.special import gamma
 from scipy.special import gammaincc
 import time
-from multiprocessing import Pool
+import numba as nb
 import matplotlib.pyplot as plt
 
 #%% User input
@@ -99,30 +99,34 @@ eta = [partial(t6.eta_gaus),
     
     
 tic = time.time()
-pool = Pool()
+
 
 bic_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
 like_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
 pen_final = np.zeros([embic_iter, L_max, 3, MC, eps_iter])
 
+@nb.jit()
+def fun():
+    for iMC in nb.prange(MC):
+        bic = np.zeros([embic_iter, L_max, 3])
+        like = np.zeros([embic_iter, L_max, 3])
+        pen = np.zeros([embic_iter, L_max, 3])
+        for iEmBic in range(embic_iter):
+            for ll in range(L_max):
+                # EM
+                mu_est, S_est, t, R = t6.EM_RES(data[iMC, ii_eps,  :, 1:r+1], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
+                mem = (R == R.max(axis=1)[:,None])
+                
+                bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data[iMC, ii_eps, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
+                bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
+                bic[iEmBic, ll, 2], like[iEmBic, ll, 2], pen[iEmBic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
+                   
+        bic_final[:,:,:, iMC, ii_eps] = bic
+        like_final[:,:,:, iMC, ii_eps] = like
+        pen_final[:,:,:, iMC, ii_eps] = pen
+            
 for ii_eps in range(eps_iter):
-    for iMC in range(MC):
-            bic = np.zeros([embic_iter, L_max, 3])
-            like = np.zeros([embic_iter, L_max, 3])
-            pen = np.zeros([embic_iter, L_max, 3])
-            for iEmBic in range(embic_iter):
-                for ll in range(L_max):
-                    # EM
-                    mu_est, S_est, t, R = t6.EM_RES(data[iMC, ii_eps,  :, 1:r+1], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
-                    mem = (R == R.max(axis=1)[:,None])
-                    
-                    bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data[iMC, ii_eps, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
-                    bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
-                    bic[iEmBic, ll, 2], like[iEmBic, ll, 2], pen[iEmBic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
-                       
-            bic_final[:,:,:, iMC, ii_eps] = bic
-            like_final[:,:,:, iMC, ii_eps] = like
-            pen_final[:,:,:, iMC, ii_eps] = pen
+            fun()
             print(str(ii_eps)+ "/" + str(eps_iter))
             print(time.time() - tic)
             

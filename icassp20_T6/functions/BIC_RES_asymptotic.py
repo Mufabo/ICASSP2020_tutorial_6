@@ -6,7 +6,6 @@ def BIC_RES_asymptotic(S_est, t, mem, rho, psi, eta):
     penalty term
     
     Args:
-        J : 3darray of shape (ll, q, q) FIM
         S_est : 3darray of shape (ll, r, r) estimated scatter matrices of
             Cluster m
         t : 2darray of shape (N, ll) squared Mahalanobis distances of

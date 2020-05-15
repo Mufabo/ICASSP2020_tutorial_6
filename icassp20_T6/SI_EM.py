@@ -50,8 +50,7 @@ pos[:, :, 0] = X
 pos[:, :, 1] = Y
 
 for m in range(K_true):
-    Z = multivariate_normal(mean=mu_true[:,m], cov=S_true[m,:,:])
-    Z = Z.pdf(pos)
+    Z = multivariate_normal.pdf(pos, mean=mu_true[:,m], cov=S_true[m,:,:])
     Z = np.reshape(Z, X.shape)
     plt.contour(X, Y, Z)
 
@@ -62,7 +61,7 @@ plt.ylabel("Feature 2")
 #%%
 for iModel in range(len(g)):
     # perform EM algorithm
-
+    breakpoint()
     mu_est, S_est, t, R = t6.EM_RES(data[:,1:], K_true, g[iModel], psi[iModel])
     
     plt.figure()
