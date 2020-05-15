@@ -68,6 +68,7 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
         error = kmeans_instance.get_total_wce()
 
         if best is None or error < best:
+            best = error
             clu_memb_kmeans = kmeans_instance.get_clusters()
             mu_hat = np.array(kmeans_instance.get_centers())
             
