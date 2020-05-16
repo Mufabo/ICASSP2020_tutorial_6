@@ -44,7 +44,7 @@ bH = chi2.cdf(cH**2, r+2) + cH**2 / r * (1 - chi2.cdf(cH**2, r))
 aH = gamma(r/2) / np.pi**(r/2) / ( (2*bH)**(r/2) * (gamma(r/2) - igamma(r/2, cH**2 / (2*bH))) + (2*bH*cH**r*np.exp(-cH**2/(2*bH))) / (cH**2 - bH*r))
 
 
-#%% Density definitions
+# Density definitions
 
 g = [partial(t6.g_gaus, r=r),
      partial(t6.g_t, r=r, nu=nu),
@@ -73,6 +73,7 @@ bic = np.zeros([embic_iter, L_max, 3])
 like = np.zeros([embic_iter, L_max, 3])
 pen = np.zeros([embic_iter, L_max, 3])
 
+#%% EM
 for ii_embic in range(embic_iter):
     for ll in range(L_max):
         #EM
@@ -103,7 +104,7 @@ pos = np.empty(X.shape + (2,))
 pos[:, :, 0] = X
 pos[:, :, 1] = Y
 
-#%% BIC
+#BIC
 for ii_embic in range(embic_iter):
     plt.figure()
     plt.subplot(1,2,1)
@@ -125,5 +126,5 @@ for ii_embic in range(embic_iter):
     plt.xlabel("number of clusters")
     plt.ylabel("BIC")
     plt.legend(names, loc="lower left")
-    plt.title("Nk: " + str(N_k) + ", eps: "+str(epsilon))    
+    plt.title("Nk: " + str(N_k) + ", eps: "+str(epsilon) + ", EM-"+g_names[em_bic[ii_embic,0]-1] + ", BIC-"+g_names[em_bic[ii_embic,1]-1])    
     
