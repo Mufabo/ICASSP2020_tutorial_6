@@ -33,6 +33,8 @@ cT = 4.685
 epsilon = .15 # percentage of replacement outliers
 N_k = 250 # Number of samples per cluster
 data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
+import scipy.io as sio
+data = sio.loadmat('C:/Users/Computer/projects/ICASSP2020_tutorial/tests/data_simple.mat')['data']
 L_max = 2 * K_true # search range
 
 #%% Model definitions

@@ -5,8 +5,9 @@ from pyclustering.utils.metric import distance_metric, type_metric
 from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 import warnings
 import icassp20_T6 as t6
+from numba import jit
 
-
+#@jit()
 def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
     """
     EM algorithm for mixture of RES distributions defined by g and psi
@@ -54,10 +55,10 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
     log_likelihood = np.zeros(em_max_iter)
     
     """
-    Kmeans clustering
+    Kmedians clustering
     """
 
-    replicates = 50
+    replicates = 25
     manhattan_metric = distance_metric(type_metric.MANHATTAN)
     best = None
     for i in range(replicates):
