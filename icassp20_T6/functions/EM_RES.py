@@ -6,7 +6,7 @@ from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 import warnings
 import icassp20_T6 as t6
 
-def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
+def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
     """
     EM algorithm for mixture of RES distributions defined by g and psi
     
@@ -56,23 +56,20 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
     Kmeans clustering
     """
     
-    replicates = 5
+    replicates = 500
     manhattan_metric = distance_metric(type_metric.MANHATTAN)
     best = None
     for i in range(replicates):
         # Initialization using K-means++
         initial_centers = kmeans_plusplus_initializer(data, ll).initialize()
-        kmeans_instance = kmeans(data, initial_centers, itermax = 1000
-                                 , metric = manhattan_metric)
+        kmeans_instance = kmeans(data, initial_centers, itermax = 10                                , metric = manhattan_metric)
         kmeans_instance.process()
         error = kmeans_instance.get_total_wce()
-
         if best is None or error < best:
             best = error
             clu_memb_kmeans = kmeans_instance.get_clusters()
             mu_hat = np.array(kmeans_instance.get_centers())
             
-
     for m in range(ll):
         x_hat = data[clu_memb_kmeans[m], 0] - mu_hat[m][:, None]
         N_m = len(clu_memb_kmeans[m])
@@ -82,7 +79,8 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
         
         # Check if the sample covariance matrix is positive definite
         spd = all(spl.eigvals(S_hat[m, :, :]) > 0)
-        if spd or np.linalg.cond(S_hat[m, :, :]) > 30:
+        # if not modify to get spd matrix
+        if not spd or np.linalg.cond(S_hat[m, :, :]) > 30:
             S_hat[m, :, :] = 1/(r*N_m)*np.sum(np.diag(x_hat @ x_hat.T)) * np.eye(r) 
             if not all(spl.eigvals(S_hat[m, :, :]) > 0):
                 S_hat[m, :, :] = np.eye(r)
@@ -106,7 +104,6 @@ def EM_RES(data, ll, g, psi, limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
             mu_hat[m] = np.sum(v_diff[:,m:m+1] * data, axis=0) / np.sum(v_diff[:,m], axis=0)
             S_hat[m,:,:] = 2 * (v_diff[:,m] * (data - mu_hat[m]).T @ (data - mu_hat[m])) / np.sum(v[:,m], axis=0) + reg_value * np.eye(r)
             tau[m] = np.sum(v[:,m], axis=0)/N
-            
             t[:,m] = t6.mahalanobisDistance(data, mu_hat[m], S_hat[m,:,:])
 
             
