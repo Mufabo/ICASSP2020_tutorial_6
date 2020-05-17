@@ -52,7 +52,7 @@ def data_31(N_k, epsilon):
     data[index_repl, :] = np.hstack([np.ones([N_repl, 1])*(K_true+1), data_rpl])
       
     
-    return data, r, N, K_true, mu_true, scatter_true
+    return data[:,1:], data[:,0:1], r, N, K_true, mu_true, scatter_true
     
     
   

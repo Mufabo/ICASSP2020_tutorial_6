@@ -13,9 +13,9 @@ from icassp20_T6.functions.matlab_helpers import mldivide, igamma
 from icassp20_T6.functions.nearestSPD import nearestSPD
 from icassp20_T6.functions.FIM_RES import FIM_RES
 
-from icassp20_T6.functions.BIC_RES_2 import BIC_RES_2
+from icassp20_T6.functions.BIC_F import BIC_F
 from icassp20_T6.functions.BIC_S import BIC_S
-from icassp20_T6.functions.BIC_RES_asymptotic import BIC_RES_asymptotic
+from icassp20_T6.functions.BIC_A import BIC_A
 
 from icassp20_T6.functions.plot_scatter import plot_scatter
 from icassp20_T6.functions.data_31 import data_31

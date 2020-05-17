@@ -57,13 +57,7 @@ data = np.zeros([MC, eps_iter, N_k*3, 3])
 
 for ii_eps in range(eps_iter):
     for ii_mc in range(MC):
-        data[ii_mc, ii_eps, :, :], r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
-        
-        # replacement outlier
-        N_repl = 1
-        index_repl = random.sample(range(N), N_repl)
-        data[ii_mc, ii_eps, index_repl,:] = np.array([np.ones(N_repl) * (K_true+1), 
-                                                      X.flatten()[ii_eps], Y.flatten()[ii_eps]])
+        data[ii_mc, ii_eps, :, :], labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
         
 L_max = 2 * K_true # search range
 
@@ -114,11 +108,11 @@ def fun():
         for iEmBic in range(embic_iter):
             for ll in range(L_max):
                 # EM
-                mu_est, S_est, t, R = t6.EM_RES(data[iMC, ii_eps,  :, 1:r+1], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
+                mu_est, S_est, t, R = t6.EM_RES(data[iMC, ii_eps,  :, :], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
                 mem = (R == R.max(axis=1)[:,None])
                 
-                bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data[iMC, ii_eps, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
-                bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
+                bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_F(data[iMC, ii_eps, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
+                bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_A(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
                 bic[iEmBic, ll, 2], like[iEmBic, ll, 2], pen[iEmBic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
                    
         bic_final[:,:,:, iMC, ii_eps] = bic
@@ -161,13 +155,13 @@ for ii_embic in range(embic_iter):
 g_names = ["Gaus", "t", "Huber", "Tukey"]
 names = ["RES", "aRES", "Schwarz"]
 p_det_2 = np.transpose(p_det, [0, 2, 1])
-data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
+data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
 
 for ii_embic in range(embic_iter):
     for k_bic in range(3):
         Z = np.reshape(p_det_2[ii_embic, :, k_bic], X.shape)
         plt.figure()
         plt.contour(X, Y, Z)
-        t6.plot_scatter(data, K_true, r)
+        t6.plot_scatter(np.hstack([labels, data]), K_true, r)
         plt.title("EM-" + g_names[em_bic[ii_embic, 0]-1] + ", BIC-" + g_names[em_bic[ii_embic, 1]-1] + "-"+names[k_bic])
         

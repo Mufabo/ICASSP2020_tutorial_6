@@ -21,10 +21,10 @@ warnings.filterwarnings('ignore')
 epsilon = np.arange(0,.351,.05)
 
 # Number of data points per cluster
-N_k = 10
+N_k = 50
 
 # Monte Carlo iterations
-MC = 30
+MC = 10
 
 # Select combination of EM and BIC to be simulated
 # 1: Gaussian, 2: t, 3: Huber, 4: Tukey
@@ -37,12 +37,12 @@ em_bic = np.array([[1, 1],
 # data generation
 embic_iter = len(em_bic)
 eps_iter = len(epsilon)
-data = np.zeros([MC, eps_iter, 3*N_k ,3])
+data = np.zeros([MC, eps_iter, 3*N_k ,2])
 
 
 for iEpsilon in range(eps_iter):
     for iMC in range(MC):
-        data[iMC, iEpsilon, :,:], r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon[iEpsilon])
+        data[iMC, iEpsilon, :,:], labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon[iEpsilon])
         
 
 L_max = 2*K_true # search range
@@ -101,11 +101,11 @@ def fun():
         for iEmBic in range(embic_iter):
             for ll in range(L_max):
                 # EM
-                mu_est, S_est, t, R = t6.EM_RES(data[iMC, iEpsilon,  :, 1:r+1], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
+                mu_est, S_est, t, R = t6.EM_RES(data[iMC, iEpsilon,  :, :], ll+1, g[em_bic[iEmBic, 0]-1], psi[em_bic[iEmBic,0]-1])
                 mem = (R == R.max(axis=1)[:,None])
                 
-                bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_RES_2(data[iMC, iEpsilon, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
-                bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
+                bic[iEmBic, ll, 0], like[iEmBic, ll, 0], pen[iEmBic, ll, 0] = t6.BIC_F(data[iMC, iEpsilon, :, :], S_est, mu_est, t, mem,rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])            
+                bic[iEmBic, ll, 1], like[iEmBic, ll, 1], pen[iEmBic, ll, 1] = t6.BIC_A(S_est, t, mem, rho[em_bic[iEmBic, 1]-1], psi[em_bic[iEmBic, 1]-1], eta[em_bic[iEmBic, 1]-1])
                 bic[iEmBic, ll, 2], like[iEmBic, ll, 2], pen[iEmBic, ll, 2] = t6.BIC_S(S_est, t, mem, rho[em_bic[iEmBic, 1]-1])
                    
         bic_final[:,:,:, iMC, iEpsilon] = bic

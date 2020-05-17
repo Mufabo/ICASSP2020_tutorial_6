@@ -1,6 +1,6 @@
 import numpy as np
 
-def BIC_RES_asymptotic(S_est, t, mem, rho, psi, eta):
+def BIC_A(S_est, t, mem, rho, psi, eta):
     """
     Computes the BIC of a RES distribution with the asymptotic
     penalty term

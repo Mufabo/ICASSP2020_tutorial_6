@@ -2,14 +2,14 @@ import numpy as np
 import icassp20_T6 as t6
 import warnings
 
-def BIC_RES_2(data, S_est, mu_est, t, mem, rho, psi, eta):
+def BIC_F(data, S_est, mu_est, t, mem, rho, psi, eta):
     """
     Computes the BIC of a RES distribution based on a finite sample
     penalty term
     
     Args:
-        data : 2darray of shape (N, r+1), includes labels from 1 to K_true+1
-            where K_true+1 are the outliers, data(:,2:r+1) includes the actual data samples
+        data : 2darray of shape (N, r)
+
         
         S_est : 3darray of shape (ll, r, r) Estimated scatter matrix of
             all clusters
@@ -44,7 +44,7 @@ def BIC_RES_2(data, S_est, mu_est, t, mem, rho, psi, eta):
     detJ = np.zeros(ll)
     
     for m in range(ll):
-        x_hat_m = data[mem[:, m], 1:] - mu_est[m]
+        x_hat_m = data[mem[:, m]] - mu_est[m]
         t_m = t[mem[:, m], m]
         J = t6.FIM_RES(x_hat_m, t_m , S_est[m,:,:], psi, eta, D)
         detJ[m] = np.linalg.det(J)

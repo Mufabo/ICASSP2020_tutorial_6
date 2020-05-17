@@ -32,9 +32,9 @@ cT = 4.685
 #%% Your data here
 epsilon = .15 # percentage of replacement outliers
 N_k = 250 # Number of samples per cluster
-data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
-import scipy.io as sio
-data = sio.loadmat('C:/Users/Computer/projects/ICASSP2020_tutorial/tests/data_simple.mat')['data']
+data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
+#import scipy.io as sio
+#data = sio.loadmat('C:/Users/Computer/projects/ICASSP2020_tutorial/tests/plot_simple_test.mat')['dat']
 L_max = 2 * K_true # search range
 
 #%% Model definitions
@@ -79,7 +79,7 @@ pen = np.zeros([embic_iter, L_max, 3])
 for ii_embic in range(embic_iter):
     for ll in range(L_max):
         #EM
-        mu, S, t, R = t6.EM_RES(data[:,1:], ll+1, g[em_bic[ii_embic, 0]-1], psi[em_bic[ii_embic,0]-1])
+        mu, S, t, R = t6.EM_RES(data, ll+1, g[em_bic[ii_embic, 0]-1], psi[em_bic[ii_embic,0]-1])
         
         mu_est[ll].append(mu)
         S_est[ll].append(S)
@@ -87,8 +87,8 @@ for ii_embic in range(embic_iter):
         mem = (R == R.max(axis=1)[:,None])
         
         #BIC        
-        bic[ii_embic, ll, 0], like[ii_embic, ll, 0], pen[ii_embic, ll, 0] = t6.BIC_RES_2(data, S_est[ll][ii_embic], mu_est[ll][ii_embic], t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
-        bic[ii_embic, ll, 1], like[ii_embic, ll, 1], pen[ii_embic, ll, 1] = t6.BIC_RES_asymptotic(S_est[ll][ii_embic], t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
+        bic[ii_embic, ll, 0], like[ii_embic, ll, 0], pen[ii_embic, ll, 0] = t6.BIC_F(data, S_est[ll][ii_embic], mu_est[ll][ii_embic], t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
+        bic[ii_embic, ll, 1], like[ii_embic, ll, 1], pen[ii_embic, ll, 1] = t6.BIC_A(S_est[ll][ii_embic], t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
         bic[ii_embic, ll, 2], like[ii_embic, ll, 2], pen[ii_embic, ll, 2] = t6.BIC_S(S_est[ll][ii_embic], t, mem, rho[em_bic[ii_embic, 1]-1])
 
 #%% Plots
@@ -110,13 +110,12 @@ pos[:, :, 1] = Y
 for ii_embic in range(embic_iter):
     plt.figure()
     plt.subplot(1,2,1)
-    t6.plot_scatter(data, K_true, r)
+    t6.plot_scatter(np.hstack([labels, data]), K_true, r)
     
     for m in range(K_true):
-        mu = mu_est[K_true][ii_embic][m]
-        S = S_est[K_true][ii_embic][m]
+        mu = mu_est[K_true-1][ii_embic][m]
+        S = S_est[K_true-1][ii_embic][m]
         Z = multivariate_normal.pdf(pos, mean=mu, cov=S)
-        Z = np.reshape(Z, X.shape)
         plt.contour(X, Y, Z)
     plt.title("EM: " + g_names[em_bic[ii_embic,0]-1] +" at K = " + str(K_true))
     plt.xlabel('Feature 1')

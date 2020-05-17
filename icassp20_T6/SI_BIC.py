@@ -42,13 +42,13 @@ embic_iter = len(em_bic)
 
 igamma = lambda a, b: gammaincc(a, b)* gamma(a)
 
-data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
+data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
 bic = np.zeros([embic_iter, 3, MC, 2*K_true])
 like = np.zeros([embic_iter, 3, MC, 2*K_true])
 pen = np.zeros([embic_iter, 3, MC, 2*K_true])
 
 for iMC in range(MC):
-    data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
+    data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
     L_max = 2 * K_true # search range
     """
     Design parameters
@@ -60,7 +60,6 @@ for iMC in range(MC):
     # Huber:
     qant = 0.8
     
-
     cH = np.sqrt(chi2.ppf(qant, r))
     bH = chi2.cdf(cH**2, r+2) + cH**2 / r * (1 - chi2.cdf(cH**2, r))
     aH = gamma(r/2) / np.pi**(r/2) / ( (2*bH)**(r/2) * (gamma(r/2) - igamma(r/2, cH**2 / (2*bH))) + (2*bH*cH**r*np.exp(-cH**2/(2*bH))) / (cH**2 - bH*r))
@@ -96,13 +95,13 @@ for iMC in range(MC):
             """
             EM
             """
-            mu_est, S_est, t, R = t6.EM_RES(data[:,1:], ll+1, g[em_bic[ii_embic, 0]-1], psi[em_bic[ii_embic,0]-1])
+            mu_est, S_est, t, R = t6.EM_RES(data, ll+1, g[em_bic[ii_embic, 0]-1], psi[em_bic[ii_embic,0]-1])
             mem = (R == R.max(axis=1)[:,None])            
             """
             BIC
             """
 
-            bic[ii_embic, 0, iMC, ll], like[ii_embic, 0, iMC, ll], pen[ii_embic, 0, iMC, ll] = t6.BIC_RES_2(data, S_est, mu_est, t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
+            bic[ii_embic, 0, iMC, ll], like[ii_embic, 0, iMC, ll], pen[ii_embic, 0, iMC, ll] = t6.BIC_F(data, S_est, mu_est, t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
             
             bic[ii_embic, 1, iMC, ll], like[ii_embic, 1, iMC, ll], pen[ii_embic, 1, iMC, ll] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
             
