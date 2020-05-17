@@ -24,7 +24,7 @@ nu = 3
 qH = .8
 
 #create data
-data, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
+data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
 
 # Models
 g = [partial(t6.g_gaus, r=r),
@@ -43,7 +43,7 @@ X, Y = np.meshgrid(x, y)
 g_names = ["Gaussian", "t", "Huber"]
 
 plt.figure()
-t6.plot_scatter(data, K_true, r)
+t6.plot_scatter(np.hstack([labels, data]), K_true, r)
 
 pos = np.empty(X.shape + (2,))
 pos[:, :, 0] = X
@@ -62,7 +62,7 @@ plt.ylabel("Feature 2")
 for iModel in range(len(g)):
     # perform EM algorithm
     breakpoint()
-    mu_est, S_est, t, R = t6.EM_RES(data[:,1:], K_true, g[iModel], psi[iModel])
+    mu_est, S_est, t, R = t6.EM_RES(data, K_true, g[iModel], psi[iModel])
     
     plt.figure()
     t6.plot_scatter(data, K_true, r)
