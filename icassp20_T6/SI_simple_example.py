@@ -1,5 +1,5 @@
 """
-
+This file simulates the BIC, likelihood and penalty terms for a given data set.
 """
 from scipy.stats import multivariate_normal
 import numpy as np
@@ -33,9 +33,13 @@ cT = 4.685
 epsilon = .15 # percentage of replacement outliers
 N_k = 250 # Number of samples per cluster
 data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
+L_max = 2 * K_true # search range
+
+#%%
 #import scipy.io as sio
 #data = sio.loadmat('C:/Users/Computer/projects/ICASSP2020_tutorial/tests/plot_simple_test.mat')['dat']
-L_max = 2 * K_true # search range
+#labels =data[:,0:1]
+#data = data[:,1:]
 
 #%% Model definitions
 # Huber parameters
@@ -122,7 +126,7 @@ for ii_embic in range(embic_iter):
     plt.ylabel('Feature 2')
     
     plt.subplot(1,2,2)
-    plt.plot(bic[ii_embic]) #, marker=marker[:bic.shape[-1]]
+    [plt.plot(bic[ii_embic][:,i], marker=marker[i]) for i in range(bic.shape[-1])]
     plt.grid()
     plt.xlabel("number of clusters")
     plt.ylabel("BIC")

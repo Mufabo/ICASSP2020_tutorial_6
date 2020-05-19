@@ -8,7 +8,8 @@ import icassp20_T6 as t6
 from numba import jit
 
 #@jit()
-def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
+def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
+           initial_values=None):
     """
     EM algorithm for mixture of RES distributions defined by g and psi
     
@@ -29,6 +30,9 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
             
         reg_value : float. Regularization value used to regularize 
             the covariance matrix in the EM algorithm
+            
+        initial_values : tuple containing the initial centers and cluster
+            memberships. If None, compute initial estimate with K-medians.
         
     Returns:
         mu_hat : 2darray of shape(ll, r). Final estimate of cluster
@@ -57,21 +61,24 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6):
     """
     Kmedians clustering
     """
-
-    replicates = 25
-    manhattan_metric = distance_metric(type_metric.MANHATTAN)
-    best = None
-    for i in range(replicates):
-        # Initialization using K-means++
-        initial_centers = kmeans_plusplus_initializer(data, ll).initialize()
-        kmeans_instance = kmeans(data, initial_centers, itermax = 10                                , metric = manhattan_metric)
-        kmeans_instance.process()
-        error = kmeans_instance.get_total_wce()
-        if best is None or error < best:
-            best = error
-            clu_memb_kmeans = kmeans_instance.get_clusters()
-            mu_hat = np.array(kmeans_instance.get_centers())
-            
+    if initial_values is None:
+        replicates = 25
+        manhattan_metric = distance_metric(type_metric.MANHATTAN)
+        best = None
+        for i in range(replicates):
+            # Initialization using K-means++
+            initial_centers = kmeans_plusplus_initializer(data, ll).initialize()
+            kmeans_instance = kmeans(data, initial_centers, itermax = 10                                , metric = manhattan_metric)
+            kmeans_instance.process()
+            error = kmeans_instance.get_total_wce()
+            if best is None or error < best:
+                best = error
+                clu_memb_kmeans = kmeans_instance.get_clusters()
+                mu_hat = np.array(kmeans_instance.get_centers())
+    else:
+        mu_hat = initial_values[0]
+        clu_memb_kmeans = initial_values[1]
+        
     for m in range(ll):
         x_hat = data[clu_memb_kmeans[m], 0] - mu_hat[m][:, None]
         N_m = len(clu_memb_kmeans[m])

@@ -30,7 +30,9 @@ def data_31(N_k, epsilon):
 
     mu_true = np.array([[0, 5, -5], [5, 0, 0]])
 
-    scatter_true = np.array([[[2, 0.5], [0.5, 0.5]], [[1, 0], [0, 0.1]], [[2, -0.5], [-0.5, 0.5]]])
+    scatter_true = np.array([[[2, 0.5], [0.5, 0.5]], 
+                             [[1, 0], [0, 0.1]], 
+                             [[2, -0.5], [-0.5, 0.5]]])
 
     N = K_true * N_k # total number of data points
 
@@ -52,7 +54,7 @@ def data_31(N_k, epsilon):
     data[index_repl, :] = np.hstack([np.ones([N_repl, 1])*(K_true+1), data_rpl])
       
     
-    return data[:,1:], data[:,0:1], r, N, K_true, mu_true, scatter_true
+    return data[:,1:], data[:,0:1], r, N, K_true, mu_true.T, scatter_true
     
     
   

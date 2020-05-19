@@ -61,7 +61,7 @@ plt.ylabel("Feature 2")
 #%%
 for iModel in range(len(g)):
     # perform EM algorithm
-    breakpoint()
+
     mu_est, S_est, t, R = t6.EM_RES(data, K_true, g[iModel], psi[iModel])
     
     plt.figure()

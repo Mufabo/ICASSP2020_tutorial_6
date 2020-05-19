@@ -1,3 +1,7 @@
+"""
+This file simulates the BIC, likelihood and penalty terms for a given data set.
+"""
+
 import numpy as np
 from scipy.stats.distributions import chi2
 from scipy.special import gamma
@@ -7,13 +11,9 @@ import matplotlib.pyplot as plt
 from functools import partial
 import icassp20_T6 as t6
 
-# This file simulates the BIC, likelihood and penalty terms for a given
-# data set.
 
+#%% User input
 
-"""
-User input
-"""
 
 # number of Monte Carlo iterations
 MC = 5
@@ -33,9 +33,8 @@ em_bic = np.array([[1, 1],
                    [3, 4]])
 
 
-"""
-Cluster Enumeration
-"""
+
+#%% Cluster Enumeration
 
 tic = time.time()
 embic_iter = len(em_bic)
@@ -43,20 +42,18 @@ embic_iter = len(em_bic)
 igamma = lambda a, b: gammaincc(a, b)* gamma(a)
 
 data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
-bic = np.zeros([embic_iter, 3, MC, 2*K_true])
-like = np.zeros([embic_iter, 3, MC, 2*K_true])
-pen = np.zeros([embic_iter, 3, MC, 2*K_true])
+L_max = 2 * K_true # search range
+bic = np.zeros([MC, L_max, 3, embic_iter])
+like = np.zeros([MC, L_max, 3, embic_iter])
+pen = np.zeros([MC, L_max, 3, embic_iter])
 
+#%%
 for iMC in range(MC):
     data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, epsilon)
-    L_max = 2 * K_true # search range
-    """
-    Design parameters
-    """
-    
+        
+    #Design parameters
     # t:
     nu = 3
-    
     # Huber:
     qant = 0.8
     
@@ -66,10 +63,9 @@ for iMC in range(MC):
     
     # Tukey:
     cT = 4.685
-    
-    """
-    Density definitions
-    """
+        
+    # Density definitions
+
     g = [partial(t6.g_gaus, r=r),
          partial(t6.g_t, r=r, nu=nu),
          partial(t6.g_huber2, r=r, cH=cH, bH=bH, aH=aH)]
@@ -92,60 +88,51 @@ for iMC in range(MC):
     for ii_embic in range(embic_iter):
         for ll in range(L_max):
             
-            """
-            EM
-            """
+            #EM
             mu_est, S_est, t, R = t6.EM_RES(data, ll+1, g[em_bic[ii_embic, 0]-1], psi[em_bic[ii_embic,0]-1])
             mem = (R == R.max(axis=1)[:,None])            
-            """
-            BIC
-            """
-
-            bic[ii_embic, 0, iMC, ll], like[ii_embic, 0, iMC, ll], pen[ii_embic, 0, iMC, ll] = t6.BIC_F(data, S_est, mu_est, t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
             
-            bic[ii_embic, 1, iMC, ll], like[ii_embic, 1, iMC, ll], pen[ii_embic, 1, iMC, ll] = t6.BIC_RES_asymptotic(S_est, t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
+            #BIC
+            bic[iMC, ll, 0, ii_embic], like[iMC, ll, 0, ii_embic], pen[iMC, ll, 0, ii_embic] = t6.BIC_F(data, S_est, mu_est, t, mem,rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])            
             
-            bic[ii_embic, 2, iMC, ll], like[ii_embic, 2, iMC, ll], pen[ii_embic, 2, iMC, ll] = t6.BIC_S(S_est, t, mem, rho[em_bic[ii_embic, 1]-1])
+            bic[iMC, ll, 1, ii_embic], like[iMC, ll, 1, ii_embic], pen[iMC, ll, 1, ii_embic] = t6.BIC_A(S_est, t, mem, rho[em_bic[ii_embic, 1]-1], psi[em_bic[ii_embic, 1]-1], eta[em_bic[ii_embic, 1]-1])
+            
+            bic[iMC, ll, 2, ii_embic], like[iMC, ll, 2, ii_embic], pen[iMC, ll, 2, ii_embic] = t6.BIC_S(S_est, t, mem, rho[em_bic[ii_embic, 1]-1])
           
     print("Current iteration: %i" % iMC)
     
-"""
-Averaging over MC
-"""
-bic_avg = np.mean(bic, axis=2)
-like_avg = np.mean(like, axis=2)
-pen_avg = np.mean(pen, axis=2)
-#%%  
-"""
-Plots
-"""
-t6.plot_scatter(data, K_true, r)
+#%% Averaging over MC
+
+bic_avg = np.mean(np.transpose(bic, [1,2,3,0]), axis=3)
+like_avg = np.mean(np.transpose(like, [1,2,3,0]), axis=3)
+pen_avg = np.mean(np.transpose(pen, [1,2,3,0]), axis=3)
+#%%  plots
+
+t6.plot_scatter(np.hstack([labels, data]), K_true, r)
 
 g_names = ['Gaus', 't', 'Huber', 'Tukey']
 marker = ['o','s','d','*','x','^','v','>','<','p','h', '+','o']
 names = ["RES", "aRES", "Schwarz"]
 
-"""
-BICs
-"""
+#%% BICs
+
 for ii_embic in range(embic_iter):
     plt.figure()
     plt.grid()
-    [plt.plot(bic_avg[ii_embic,i,:], marker='o') for i in range(len(bic_avg[ii_embic]))]
+    [plt.plot(bic_avg[:,i,ii_embic], marker=marker[i]) for i in range(bic_avg.shape[1])]
     plt.xlabel('number of clusters')
     plt.ylabel('BIC')
     
     plt.legend(names, loc='lower right')
     plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon) + " EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])
 
-"""
-Likelihood
-"""
+#%% Likelihood
+
 plt.figure()
 plt.grid()
 leg_names = []
 for ii_embic in range(embic_iter):
-    [plt.plot(like_avg[ii_embic,i,:], marker='o') for i in range(len(like_avg[ii_embic]))]
+    [plt.plot(like_avg[:,i,ii_embic], marker=marker[i]) for i in range(like_avg.shape[1])]
     leg_names.append("EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])
 
 plt.xlabel('number of clusters')
@@ -154,21 +141,14 @@ plt.ylabel('Likelihood')
 plt.legend(leg_names, loc='lower right')
 plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon))
 
-"""
-Penalty terms
-"""
+#%% Penalty terms
+
 for ii_embic in range(embic_iter):
     plt.figure()
     plt.grid()
-    [plt.plot(pen_avg[ii_embic,i,:], marker='o') for i in range(len(pen_avg[ii_embic]))]
+    [plt.plot(pen_avg[:,i,ii_embic], marker=marker[i]) for i in range(pen_avg.shape[1])]
     plt.xlabel('number of clusters')
     plt.ylabel('BIC')
     
     plt.legend(names, loc='lower right')
     plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon) + " EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])
-
-
-
-    
-
-

@@ -3,7 +3,6 @@ This file simulates the sensitivity curves.
 """
 
 import numpy as np
-import random
 import icassp20_T6 as t6
 from functools import partial
 from scipy.stats.distributions import chi2
@@ -53,7 +52,7 @@ X, Y = np.meshgrid(x, y)
 embic_iter = len(em_bic)
 eps_iter = X.shape[0] * X.shape[1]
 
-data = np.zeros([MC, eps_iter, N_k*3, 3])
+data = np.zeros([MC, eps_iter, N_k*3, 2])
 
 for ii_eps in range(eps_iter):
     for ii_mc in range(MC):
@@ -120,9 +119,9 @@ def fun():
         pen_final[:,:,:, iMC, ii_eps] = pen
             
 for ii_eps in range(eps_iter):
-            fun()
-            print(str(ii_eps)+ "/" + str(eps_iter))
-            print(time.time() - tic)
+    fun()
+    print(str(ii_eps)+ "/" + str(eps_iter))
+    print(time.time() - tic)
             
 
 p_under = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
