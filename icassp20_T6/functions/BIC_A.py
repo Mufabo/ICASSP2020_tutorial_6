@@ -34,7 +34,7 @@ def BIC_A(S_est, t, mem, rho, psi, eta):
     for m in range(ll):
         temp_rho[m] = np.sum(rho(t[mem[:,m], m]))
         temp_psi[m] = np.sum(psi(t[mem[:,m], m]))
-        temp_eta[m] = np.sum(rho(t[mem[:,m], m]))
+        temp_eta[m] = np.sum(eta(t[mem[:,m], m]))
         
         epsilon[m] = np.max(np.array([np.abs(temp_psi[m]),
                                       np.abs(temp_eta[m]),

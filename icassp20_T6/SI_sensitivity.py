@@ -56,8 +56,20 @@ data = np.zeros([MC, eps_iter, N_k*3, 2])
 
 for ii_eps in range(eps_iter):
     for ii_mc in range(MC):
+        # generate data with N_k samples per cluster and no outliers
         data[ii_mc, ii_eps, :, :], labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
         
+        # replacement outliers
+        N_repl = 1 # Number of outliers
+        index_repl = np.random.permutation(N)[:N_repl]
+        data[ii_mc, ii_eps, index_repl, :] = np.hstack([X.ravel()[ii_eps], Y.ravel()[ii_eps]])
+#%% Test data
+#import scipy.io as sio
+#data = sio.loadmat("C:/Users/Computer/projects/ICASSP2020_tutorial/tests/sens_data.mat")['data']
+#data = np.transpose(data, [3,2,0,1])
+
+
+#%%      
 L_max = 2 * K_true # search range
 
 igamma = lambda a, b: gammaincc(a, b)* gamma(a)
@@ -66,11 +78,8 @@ cH = np.sqrt(chi2.ppf(qant, r))
 bH = chi2.cdf(cH**2, r+2) + cH**2 / r * (1 - chi2.cdf(cH**2, r))
 aH = gamma(r/2) / np.pi**(r/2) / ( (2*bH)**(r/2) * (gamma(r/2) - igamma(r/2, cH**2 / (2*bH))) + (2*bH*cH**r*np.exp(-cH**2/(2*bH))) / (cH**2 - bH*r))
 
+#%% Density definitions
 
-
-"""
-Density definitions
-"""
 g = [partial(t6.g_gaus, r=r),
      partial(t6.g_t, r=r, nu=nu),
      partial(t6.g_huber2, r=r, cH=cH, bH=bH, aH=aH)]
@@ -124,14 +133,15 @@ for ii_eps in range(eps_iter):
     print(time.time() - tic)
             
 
-p_under = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
-p_det = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
-p_over = np.zeros([embic_iter, bic_final.shape[1], eps_iter])
-       
+    
 #%% Evaluation
+p_under = np.zeros([embic_iter, bic_final.shape[2], eps_iter])
+p_det = np.zeros([embic_iter, bic_final.shape[2], eps_iter])
+p_over = np.zeros([embic_iter, bic_final.shape[2], eps_iter])
+
 for ii_embic in range(embic_iter):
     for ii_eps in range(eps_iter):
-        for k in range(3):
+        for k in range(bic_final.shape[2]):
             
             BICmax = bic_final[ii_embic,:, k, :, ii_eps] == np.max(bic_final[ii_embic,:, k, :, ii_eps], axis=0)
             
@@ -153,14 +163,14 @@ for ii_embic in range(embic_iter):
 #%% Plot
 g_names = ["Gaus", "t", "Huber", "Tukey"]
 names = ["RES", "aRES", "Schwarz"]
-p_det_2 = np.transpose(p_det, [0, 2, 1])
+#p_det_2 = np.transpose(p_det, [0, 2, 1])
 data, labels, r, N, K_true, mu_true, S_true = t6.data_31(N_k, 0)
 
 for ii_embic in range(embic_iter):
-    for k_bic in range(3):
-        Z = np.reshape(p_det_2[ii_embic, :, k_bic], X.shape)
+    for k_bic in range(bic_final.shape[2]):
+        Z = np.reshape(p_det[ii_embic, k_bic, :], X.shape)
         plt.figure()
         plt.contour(X, Y, Z)
         t6.plot_scatter(np.hstack([labels, data]), K_true, r)
         plt.title("EM-" + g_names[em_bic[ii_embic, 0]-1] + ", BIC-" + g_names[em_bic[ii_embic, 1]-1] + "-"+names[k_bic])
-        
+

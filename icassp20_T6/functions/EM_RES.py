@@ -5,7 +5,7 @@ from pyclustering.utils.metric import distance_metric, type_metric
 from pyclustering.cluster.center_initializer import kmeans_plusplus_initializer
 import warnings
 import icassp20_T6 as t6
-from numba import jit
+#from numba import jit
 
 #@jit()
 def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
@@ -76,9 +76,10 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
                 clu_memb_kmeans = kmeans_instance.get_clusters()
                 mu_hat = np.array(kmeans_instance.get_centers())
     else:
-        mu_hat = initial_values[0]
+        mu_hat = np.array(initial_values[0])
         clu_memb_kmeans = initial_values[1]
-        
+    
+
     for m in range(ll):
         x_hat = data[clu_memb_kmeans[m], 0] - mu_hat[m][:, None]
         N_m = len(clu_memb_kmeans[m])
@@ -98,14 +99,21 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
     """
     EM Algorithm
     """
+    
     for ii in range(em_max_iter):
         # E-step
+        
         v_lower = np.zeros([N, ll])
-        for j in range(ll):                      
-            v_lower[:, j] = tau[j] * np.linalg.det(S_hat[j,:,:])**-.5 * g(t[:, j])
+        for j in range(ll):
+            try:               
+                v_lower[:, j] = tau[j] * np.linalg.det(S_hat[j,:,:])**-.5 * g(t[:, j])
+            except:
+                print(ii, j)
+
             
         for m in range(ll):
             v[:, m] = tau[m] * np.linalg.det(S_hat[m,:,:])**-.5 * g(t[:, m]) / np.sum(v_lower, axis=1)
+
             v_diff[:, m] = v[:, m] * psi(t[:, m])
 
         # M-step
@@ -113,6 +121,7 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
             mu_hat[m] = np.sum(v_diff[:,m:m+1] * data, axis=0) / np.sum(v_diff[:,m], axis=0)
             S_hat[m,:,:] = 2 * (v_diff[:,m] * (data - mu_hat[m]).T @ (data - mu_hat[m])) / np.sum(v[:,m], axis=0) + reg_value * np.eye(r)
             tau[m] = np.sum(v[:,m], axis=0)/N
+            
             t[:,m] = t6.mahalanobisDistance(data, mu_hat[m], S_hat[m,:,:])
 
             
@@ -120,6 +129,7 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
         v_conv = np.zeros([N, ll])
         for m in range(ll):
             v_conv[:, m] = tau[m] * np.linalg.det(S_hat[m,:,:])**-.5 * g(t[:,m])
+            
         log_likelihood[ii] = np.sum(np.log(np.sum(v_conv, axis=1)) ,axis=0)
         
         if ii>1 and np.abs(log_likelihood[ii] - log_likelihood[ii-1]) < limit:
