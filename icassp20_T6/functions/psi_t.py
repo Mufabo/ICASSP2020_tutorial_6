@@ -11,5 +11,5 @@ def psi_t(t, r, nu):
         psi : 1darray of size N, psi(t) of the t distribution
     """
     
-    return 0.5 * (nu * r) / (nu + t)
+    return 0.5 * (nu + r) / (nu + t)
 

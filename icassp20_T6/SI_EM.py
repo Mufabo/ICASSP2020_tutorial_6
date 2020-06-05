@@ -50,7 +50,7 @@ pos[:, :, 0] = X
 pos[:, :, 1] = Y
 
 for m in range(K_true):
-    Z = multivariate_normal.pdf(pos, mean=mu_true[:,m], cov=S_true[m,:,:])
+    Z = multivariate_normal.pdf(pos, mean=mu_true[m], cov=S_true[m,:,:])
     Z = np.reshape(Z, X.shape)
     plt.contour(X, Y, Z)
 
@@ -65,7 +65,7 @@ for iModel in range(len(g)):
     mu_est, S_est, t, R = t6.EM_RES(data, K_true, g[iModel], psi[iModel])
     
     plt.figure()
-    t6.plot_scatter(data, K_true, r)
+    t6.plot_scatter(np.hstack([labels, data]), K_true, r)
     for m in range(K_true):
         Z = multivariate_normal(mean=mu_est[m], cov=S_est[m,:,:])
         Z = Z.pdf(pos)

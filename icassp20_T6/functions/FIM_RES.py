@@ -18,6 +18,9 @@ def FIM_RES(x_hat_m, t_m, S_est, psi, eta, D):
         
     Returns:
         J : 2darray of shape (.5*r*(r+3), .5*r*(r+3)) FIM
+        
+    Note:
+        t6.mldivide(A, B) is matlabs A/B and t6.mldivide(B, A).T = A\B
     """
     
     r = len(S_est)
@@ -30,13 +33,13 @@ def FIM_RES(x_hat_m, t_m, S_est, psi, eta, D):
         temp_eta[n, :, :] = eta(t_m[n:n+1]) * x_hat_m[n:n+1].T @ x_hat_m[n:n+1]
     
     
-    F_mumu = -4 * t6.mldivide(t6.mldivide(np.sum(temp_eta, axis=0), S_est), S_est) \
+    F_mumu = -4 * t6.mldivide(t6.mldivide(np.sum(temp_eta, axis=0), S_est).T, S_est) \
         - t6.mldivide(np.eye(r), S_est) * np.sum(psi(t_m),axis=0) * 2
-        
+
     # F_muS
     temp_eta = np.zeros([N_m, r, r**2])
     for n in range(N_m):
-        tmp_0 = t6.mldivide(x_hat_m[n:n+1].T @ x_hat_m[n:n+1], S_est)
+        tmp_0 = t6.mldivide(x_hat_m[n:n+1].T @ x_hat_m[n:n+1], S_est).T
         tmp_1 = t6.mldivide(tmp_0, S_est)
         tmp_2 = np.linalg.solve(S_est, x_hat_m[n])
         temp_eta[n,:,:] = eta(t_m[n:n+1]) * np.kron(tmp_1, tmp_2)
@@ -50,7 +53,7 @@ def FIM_RES(x_hat_m, t_m, S_est, psi, eta, D):
     # F_SS
     temp_eta = np.zeros([N_m, r**2, r**2])
     for n in range(N_m):
-        tmp_0 = t6.mldivide(x_hat_m[n:n+1].T @ x_hat_m[n:n+1], S_est)
+        tmp_0 = t6.mldivide(x_hat_m[n:n+1].T @ x_hat_m[n:n+1], S_est).T
         tmp_1 = t6.mldivide(tmp_0, S_est)
         temp_eta[n,:,:] = eta(t_m[n:n+1]) * np.kron(tmp_1, tmp_1)
     

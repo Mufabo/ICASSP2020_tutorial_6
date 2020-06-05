@@ -101,15 +101,10 @@ def EM_RES(data, ll, g, psi,limit = 1e-6, em_max_iter = 200, reg_value = 1e-6,
     """
     
     for ii in range(em_max_iter):
-        # E-step
-        
+        # E-step      
         v_lower = np.zeros([N, ll])
-        for j in range(ll):
-            try:               
-                v_lower[:, j] = tau[j] * np.linalg.det(S_hat[j,:,:])**-.5 * g(t[:, j])
-            except:
-                print(ii, j)
-
+        for j in range(ll):             
+            v_lower[:, j] = tau[j] * np.linalg.det(S_hat[j,:,:])**-.5 * g(t[:, j])
             
         for m in range(ll):
             v[:, m] = tau[m] * np.linalg.det(S_hat[m,:,:])**-.5 * g(t[:, m]) / np.sum(v_lower, axis=1)

@@ -63,11 +63,6 @@ for ii_eps in range(eps_iter):
         N_repl = 1 # Number of outliers
         index_repl = np.random.permutation(N)[:N_repl]
         data[ii_mc, ii_eps, index_repl, :] = np.hstack([X.ravel()[ii_eps], Y.ravel()[ii_eps]])
-#%% Test data
-#import scipy.io as sio
-#data = sio.loadmat("C:/Users/Computer/projects/ICASSP2020_tutorial/tests/sens_data.mat")['data']
-#data = np.transpose(data, [3,2,0,1])
-
 
 #%%      
 L_max = 2 * K_true # search range

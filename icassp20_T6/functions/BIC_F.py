@@ -44,7 +44,7 @@ def BIC_F(data, S_est, mu_est, t, mem, rho, psi, eta):
     detJ = np.zeros(ll)
     
     for m in range(ll):
-        x_hat_m = data[mem[:, m]] - mu_est[m]
+        x_hat_m = data[mem[:, m], 1:] - mu_est[m]
         t_m = t[mem[:, m], m]
         J = t6.FIM_RES(x_hat_m, t_m , S_est[m,:,:], psi, eta, D)
         detJ[m] = np.linalg.det(J)
