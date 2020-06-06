@@ -132,8 +132,9 @@ plt.figure()
 plt.grid()
 leg_names = []
 for ii_embic in range(embic_iter):
-    [plt.plot(like_avg[:,i,ii_embic], marker=marker[i]) for i in range(like_avg.shape[1])]
+    plt.plot(like_avg[:,0,ii_embic], marker=marker[ii_embic])
     leg_names.append("EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])
+
 
 plt.xlabel('number of clusters')
 plt.ylabel('Likelihood')
@@ -148,7 +149,7 @@ for ii_embic in range(embic_iter):
     plt.grid()
     [plt.plot(pen_avg[:,i,ii_embic], marker=marker[i]) for i in range(pen_avg.shape[1])]
     plt.xlabel('number of clusters')
-    plt.ylabel('BIC')
+    plt.ylabel('Penalty')
     
     plt.legend(names, loc='lower right')
     plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon) + " EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])

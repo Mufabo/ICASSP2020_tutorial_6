@@ -127,7 +127,7 @@ p_over = np.zeros([embic_iter, L_max, eps_iter])
 for iEmBic in range(embic_iter):
     for iEpsilon in range(eps_iter):
         for k in range(3):
-            BICmax = bic_final[iEmBic, :,k , :, iEpsilon] == np.max(bic_final[iEmBic, :,k , :, iEpsilon], axis=0)
+            BICmax = bic_final[iEmBic, :, k, :, iEpsilon] == np.max(bic_final[iEmBic, :,k , :, iEpsilon], axis=0)
 
             K_true_det = np.repeat(np.hstack([[K_true == s for s in range(1, K_true+1)], np.zeros(L_max - K_true)]), MC) == 1
             K_true_det = np.reshape(K_true_det, [L_max, MC])
