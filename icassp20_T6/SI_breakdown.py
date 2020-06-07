@@ -146,7 +146,7 @@ for iEmBic in range(embic_iter):
 
 g_names = ['Gaus', 't', 'Huber', 'Tukey']
 marker = ['o','s','d','*','x','^','v','>','<','p','h', '+','o']
-names = ["RES", "aRES", "Schwarz"]
+names = ["Finite","Asymptotic", "Schwarz"]
 
 for iEmBic in range(embic_iter):
     plt.figure()
@@ -160,9 +160,9 @@ for iEmBic in range(embic_iter):
               + ", BIC-" + g_names[em_bic[iEmBic, 1]-1])
     
 #%%
-    
 names_all = ["EM-" + g_names[em_bic[iEmBic, 0]-1] 
-              + ", BIC-" + g_names[em_bic[iEmBic, 1]-1] for iEmBic in range(embic_iter)]
+          + ", BIC-" + g_names[em_bic[iEmBic, 1]-1] 
+          + '-' + i  for iEmBic in range(embic_iter) for i in names]
 
 plt.figure()
 plt.grid()
