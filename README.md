@@ -10,3 +10,10 @@ https://2020.ieeeicassp.org/program/tutorials/robust-data-science-modern-tools-f
 
 Run the following in a terminal.
 ```pip install git+https://github.com/Mufabo/ICASSP2020_tutorial_6.git```
+
+
+# Examples
+
+A jupyter notebook with examples can be found on google colab:
+
+https://colab.research.google.com/drive/18FRP5Xn5ILBOHQFFLHzXUs2gorDukrMR#scrollTo=aXLylfruAlWK
