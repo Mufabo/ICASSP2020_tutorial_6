@@ -122,7 +122,7 @@ for ii_embic in range(embic_iter):
     [plt.plot(bic_avg[:,i,ii_embic], marker=marker[i]) for i in range(bic_avg.shape[1])]
     plt.xlabel('number of clusters')
     plt.ylabel('BIC')
-    
+    plt.xlim([1, 5])
     plt.legend(names, loc='lower right')
     plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon) + " EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])
 
@@ -138,7 +138,7 @@ for ii_embic in range(embic_iter):
 
 plt.xlabel('number of clusters')
 plt.ylabel('Likelihood')
-
+plt.xlim([1, 5])
 plt.legend(leg_names, loc='lower right')
 plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon))
 
@@ -150,6 +150,6 @@ for ii_embic in range(embic_iter):
     [plt.plot(pen_avg[:,i,ii_embic], marker=marker[i]) for i in range(pen_avg.shape[1])]
     plt.xlabel('number of clusters')
     plt.ylabel('Penalty')
-    
+    plt.xlim([1, 5])
     plt.legend(names, loc='lower right')
     plt.title("Nk: " + str(N_k) + ', eps: ' + str(epsilon) + " EM: " + g_names[em_bic[ii_embic, 0]-1] + ", BIC: " + g_names[em_bic[ii_embic, 1]-1])
