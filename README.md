@@ -1,10 +1,4 @@
-# T-6: Robust Data Science: Modern Tools for Detection, Clustering and Cluster Enumeration
-
-Python code for tutorial nr. 6 at ICASSP 2020.
-
-Link to the official conference page :
-
-https://2020.ieeeicassp.org/program/tutorials/robust-data-science-modern-tools-for-detection-clustering-and-cluster-enumeration/
+This package provides the Python Code for the paper "Robust M-Estimation based Bayesian Cluster Enumeration for Real Elliptically Symmetric Distributions" by Christian A. Schroth and Michael Muma. The theory can be found in http://arxiv.org/abs/2005.01404.
 
 # Installation
 
